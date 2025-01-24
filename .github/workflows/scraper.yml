@@ -10,16 +10,14 @@ on:
 jobs:
   generate-data:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Pull
-        run: |
-          git pull
-
-      - name: Prepare deps
+      - name: Install dependencies
         run: npm install
 
       - name: Generate Data
@@ -28,16 +26,13 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-      - name: Commit files
+      - name: Commit and Push changes
         run: |
-          git config --local user.name actions-user
-          git config --local user.email "actions@github.com"
-          git add '*'
+          git add .
           if [[ `git status --porcelain` ]]; then
             echo "OK: Changes detected."
-            git commit -am "gh-action get data: $(date)"
+            git commit -m "Update data: $(date)"
             git push origin main
           else
-          echo "No changes were detected."
+            echo "No changes detected."
           fi
-
