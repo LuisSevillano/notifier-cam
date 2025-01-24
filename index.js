@@ -7,7 +7,8 @@ const URL = 'https://www.comunidad.madrid/servicios/salud/facultativo-especialis
 const lastDateFile = './lastDate.json';
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const TELEGRAM_CHAT_ID_1 = process.env.TELEGRAM_CHAT_ID_1;
+const TELEGRAM_CHAT_ID_2 = process.env.TELEGRAM_CHAT_ID_2;
 
 const readLastDate = async () => {
   try {
@@ -23,7 +24,7 @@ const saveLastDate = async (date) => {
   await fs.writeFile(lastDateFile, data);
 };
 
-const sendTelegramNotification = async (message) => {
+const sendTelegramNotification = async (message, TELEGRAM_CHAT_ID) => {
   const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
   const payload = {
     chat_id: TELEGRAM_CHAT_ID,
@@ -41,6 +42,7 @@ const sendTelegramNotification = async (message) => {
       console.log('Notification sent to Telegram.');
     } else {
       console.error('Error sending the notification:', await response.text());
+      process.exit(1);
     }
   } catch (err) {
     console.error('Connection error with Telegram:', err);
@@ -66,7 +68,12 @@ const scrapeWebsite = async () => {
     const lastDate = await readLastDate();
 
     if (newDate !== lastDate) {
-      await sendTelegramNotification(`Facultativo Especialista en Microbiología y Parasitología 2021 | Se ha detectado una nueva entrada: ${newDate}`);
+      await sendTelegramNotification(
+        `Facultativo Especialista en Microbiología y Parasitología 2021 | Se ha detectado una nueva entrada: ${newDate}\nhttps://www.comunidad.madrid/servicios/salud/facultativo-especialista-microbiologia-parasitologia-2021`,
+        TELEGRAM_CHAT_ID_1);
+      await sendTelegramNotification(
+        `Facultativo Especialista en Microbiología y Parasitología 2021 | Se ha detectado una nueva entrada: ${newDate}\nhttps://www.comunidad.madrid/servicios/salud/facultativo-especialista-microbiologia-parasitologia-2021`,
+        TELEGRAM_CHAT_ID_2);
 
       await saveLastDate(newDate);
     } else {
