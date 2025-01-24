@@ -1,0 +1,47 @@
+name: Web Scraper & Telegram Notification
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  push:
+    branches:
+      - main
+
+jobs:
+  scrape-and-notify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Pull
+      run: |
+        git pull
+    - name: Check out the repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Prepare deps
+      run: npm install
+
+    - name: Run scraper
+      run: node index.js
+      env:
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+    - name: Commit files
+      run: |
+        git config --local user.name actions-user
+        git config --local user.email "actions@github.com"
+        git add '*'
+        if [[ `git status --porcelain` ]]; then
+          echo "OK: Changes detected."
+          git commit -am "gh-action update video: $(date)"
+          git push origin main
+        else
+          echo "No changes were detected."
+        fi
+
