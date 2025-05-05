@@ -49,17 +49,27 @@ const sendTelegramNotification = async (message, TELEGRAM_CHAT_ID) => {
   }
 };
 
+const isValidDate = (text) => {
+  console.log({ text });
+  const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+  return datePattern.test(text);
+};
+
 const scrapeWebsite = async () => {
   try {
-    const response = await fetch(URL);
-    const html = await response.text();
+    const response = await fetch(URL, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      }
+    });
 
+    const html = await response.text();
     const $ = cheerio.load(html);
 
     const newDate = $('#text-link-parrafo > div > div > div > p:nth-child(1) strong').text().trim();
 
-    if (!newDate) {
-      console.error('Could not find a date on the page.');
+    if (!newDate || !isValidDate(newDate)) {
+      console.error('No valid date found on the page.');
       return;
     }
 
@@ -68,14 +78,13 @@ const scrapeWebsite = async () => {
     const lastDate = await readLastDate();
 
     if (newDate !== lastDate) {
+      await saveLastDate(newDate);
       await sendTelegramNotification(
         `Facultativo Especialista en Microbiología y Parasitología 2021 | Se ha detectado una nueva entrada: ${newDate}\nhttps://www.comunidad.madrid/servicios/salud/facultativo-especialista-microbiologia-parasitologia-2021`,
         TELEGRAM_CHAT_ID_1);
       await sendTelegramNotification(
         `Facultativo Especialista en Microbiología y Parasitología 2021 | Se ha detectado una nueva entrada: ${newDate}\nhttps://www.comunidad.madrid/servicios/salud/facultativo-especialista-microbiologia-parasitologia-2021`,
         TELEGRAM_CHAT_ID_2);
-
-      await saveLastDate(newDate);
     } else {
       console.log('The date has not changed.');
     }
