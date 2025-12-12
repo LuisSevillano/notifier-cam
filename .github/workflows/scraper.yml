@@ -2,7 +2,7 @@ name: Get Data
 
 on:
   schedule:
-    - cron: "*/30 6-24 * * *"
+    - cron: "*/60 * * * *"
   workflow_dispatch:
 
 jobs:
