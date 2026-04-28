@@ -55,6 +55,30 @@ const isValidDate = (text) => {
   return datePattern.test(text);
 };
 
+const extractDateFromPage = ($) => {
+  const selectors = [
+    '#read-speaker .field--name-description-format p strong',
+    '#read-speaker .field--name-description-format p',
+    '#read-speaker strong',
+    '#text-link-parrafo > div > div > div > p:nth-child(1) strong'
+  ];
+
+  for (const selector of selectors) {
+    const elements = $(selector).toArray();
+
+    for (const element of elements) {
+      const text = $(element).text().replace(/\s+/g, ' ').trim();
+      const match = text.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
+
+      if (match) {
+        return match[0];
+      }
+    }
+  }
+
+  return '';
+};
+
 const scrapeWebsite = async () => {
   try {
     const response = await fetch(URL, {
@@ -66,7 +90,7 @@ const scrapeWebsite = async () => {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    const newDate = $('#text-link-parrafo > div > div > div > p:nth-child(1) strong').text().trim();
+    const newDate = extractDateFromPage($);
 
     if (!newDate || !isValidDate(newDate)) {
       console.error('No valid date found on the page.');
