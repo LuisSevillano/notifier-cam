@@ -101,7 +101,7 @@ const scrapeWebsite = async () => {
 
     const lastDate = await readLastDate();
 
-    if (newDate !== lastDate) {
+    if (newDate.trim() !== (lastDate || '').trim()) {
       await saveLastDate(newDate);
       await sendTelegramNotification(
         `Facultativo Especialista en Microbiología y Parasitología 2021 | Se ha detectado una nueva entrada: ${newDate}\nhttps://www.comunidad.madrid/servicios/salud/facultativo-especialista-microbiologia-parasitologia-2021`,
